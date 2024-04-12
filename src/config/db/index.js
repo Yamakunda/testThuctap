@@ -7,5 +7,5 @@ const client = new MongoClient(uri, {
       deprecationErrors: true,
     }
   });
-  
-module.exports = firebaseApp;
+
+module.exports = client;
