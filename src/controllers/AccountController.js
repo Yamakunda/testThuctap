@@ -1,35 +1,16 @@
 //const Record = require('../models/Record');
-const firebaseApp = require('../config/db/index');
-const {
-    getFirestore,
-    collection,
-    doc,
-    addDoc,
-    getDoc,
-    getDocs,
-    updateDoc,
-    deleteDoc,
-    query,
-    where
-} = require('firebase/firestore');
+const client = require('../config/db/index');
+client.connect();
 
-const db = getFirestore(firebaseApp);
 exports.Login = async function (req, res) {
     try {
-        const { username, password } = req.body;
-
-        const accountRef = collection(db, "account");
-        const q = query(accountRef,
-            where("username", "==", username),
-            where("password", "==", password)
-        );
-
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
+        const {username,password} = req.body;
+        const db = client.db("DADN");
+        const collection = db.collection("account");
+        const account = await collection.findOne({username: username, password: password});
+        if (!account) {
             res.status(400).send('No matching documents');
         } else {
-            const accountSnap = querySnapshot.docs[0];
             res.status(200).send('Login successfully');
         }
     } catch (error) {

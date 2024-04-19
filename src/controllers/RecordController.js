@@ -26,10 +26,59 @@ async function addDataToAdafruit(Api, value) {
 }
 exports.Index = async function (req, res) {
     try {
-        const fan_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/thanhdanh2754/feeds/fan/');
-        const light_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/thanhdanh2754/feeds/light/');
-        const temp_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/thanhdanh2754/feeds/tempx/');
-        const humidity_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/thanhdanh2754/feeds/humidx/');
+        // const fan_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/La_Toh/feeds/fan/');
+        // const light_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/La_Toh/feeds/ledrgb/');
+        const fan_lastvalue = 0;
+        const light_lastvalue = 1;
+        const temp_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/La_Toh/feeds/temp/');
+        const humidity_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/La_Toh/feeds/humi/');
+        const currentTime = new Date();
+
+        // Convert the current time to GMT+7
+    const gmtPlus7Time = new Date(currentTime.getTime() + (7 * 60 * 60 * 1000));
+    const db = client.db("DADN");
+    const collection = db.collection("record");
+
+    const lastDocumentArray = await collection.find().sort({_id: -1}).limit(1).toArray();
+    const lastDocument = lastDocumentArray[0]; // Get the last document
+    const record = {
+        time: gmtPlus7Time,
+        temp: Number(temp_lastvalue),
+        humidity: Number(humidity_lastvalue),
+        light: light_lastvalue,
+        fan: fan_lastvalue
+    };
+
+    if(lastDocument && (lastDocument.temp !== record.temp || lastDocument.humidity !== record.humidity || lastDocument.light !== record.light || lastDocument.fan !== record.fan)){
+        const result = await collection.insertOne(record);
+    } else {
+        console.log('No new data');
+    }
+
+        res.json(record); // send the last document as a JSON response
+      } catch (err) {
+        console.error(err);
+        res.status(500).send('Error occurred while fetching record');
+      } finally {
+        //await client.close();
+      }
+}
+exports.Store = async function (req, res) {
+    try {
+        const data = req.body;
+
+        //add data to adafruit
+        if (!(data.light === undefined)) {
+            await addDataToAdafruit('https://io.adafruit.com/api/v2/webhooks/feed/EV7Kr8ULbGybCr8BVufY11GMJ6eB', data.light);
+        }
+        if (!(data.fan === undefined)) {
+            await addDataToAdafruit('https://io.adafruit.com/api/v2/webhooks/feed/sUs7BVXhmMBCrh6kJcvMiYEwpqAv', data.fan);
+        }
+
+        const fan_lastvalue = 0;
+        const light_lastvalue = 1;
+        const temp_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/La_Toh/feeds/Temp/');
+        const humidity_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/La_Toh/feeds/humi/');
         const currentTime = new Date();
 
         // Convert the current time to GMT+7
@@ -51,42 +100,6 @@ exports.Index = async function (req, res) {
       } finally {
         //await client.close();
       }
-}
-exports.Store = async function (req, res) {
-    try {
-        const data = req.body;
-
-        //add data to adafruit
-        if (!(data.light === undefined)) {
-            await addDataToAdafruit('https://io.adafruit.com/api/v2/webhooks/feed/EV7Kr8ULbGybCr8BVufY11GMJ6eB', data.light);
-        }
-        if (!(data.fan === undefined)) {
-            await addDataToAdafruit('https://io.adafruit.com/api/v2/webhooks/feed/sUs7BVXhmMBCrh6kJcvMiYEwpqAv', data.fan);
-        }
-
-        const fan_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/thanhdanh2754/feeds/fan/');
-        const light_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/thanhdanh2754/feeds/light/');
-        const temp_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/thanhdanh2754/feeds/tempx/');
-        const humidity_lastvalue = await getDataFromAPI('https://io.adafruit.com/api/v2/thanhdanh2754/feeds/humidx/');
-        const currentTime = new Date();
-
-        // Convert the current time to GMT+7
-        const gmtPlus7Time = new Date(currentTime.getTime() + (7 * 60 * 60 * 1000));
-        const db = client.db("DADN");
-        const collection = db.collection("record");
-        const record = {
-            time: gmtPlus7Time.toISOString(),
-            temp: temp_lastvalue,
-            humidity: humidity_lastvalue,
-            light: light_lastvalue,
-            fan: fan_lastvalue
-        };
-        const result = await collection.insertOne(record);
-        res.json(record); // send the last document as a JSON response
-        res.status(200).send('record created successfully');
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
 }
 // exports.Index = async function (req, res) {
 //     try {
