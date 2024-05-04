@@ -1,11 +1,7 @@
-const recordRouter = require('./record')
-const accountRouter = require('./account')
-const chartRouter = require('./chart')
+const studentRouter = require('./student')
 
 const route = (app) => {
-    app.use('/record', recordRouter)
-    app.use('/account', accountRouter)
-    app.use('/chart', chartRouter)
+    app.use('/', studentRouter)
 }
 
 module.exports = route

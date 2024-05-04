@@ -14,7 +14,7 @@ route(app)
 
 
 const PORT = 3000;
-const HOST = '192.168.1.5';
+const HOST = 'localhost';
 
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
