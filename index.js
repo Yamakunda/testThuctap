@@ -13,11 +13,11 @@ app.use(express.urlencoded({ extended: true }))
 route(app)
 
 
-const PORT = 3000;
+const PORT = process.env.PORT
 const HOST = 'localhost';
 
-app.listen(PORT, HOST, () => {
-    console.log(`Running on http://${HOST}:${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Running on`);
 });
 
 
